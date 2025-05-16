@@ -122,13 +122,13 @@
                 <span id="rulesArrow" class="arrow-down text-indigo-700"></span>
             </div>
             <div id="rulesContent" class="rules-content mt-2 text-sm text-gray-700 space-y-2"> 
-                <p><strong>1. Goal:</strong> Put one 👑 in every row. Put one 👑 in every column. Put one 👑 in every colored area.</p>
+                <p><strong>1. Goal:</strong> One 👑 (crown) in each row, each column, and each colored area – all at the same time.</p>
                 <p><strong>2. How to Mark:</strong><br/>
-                   &nbsp;&nbsp;&nbsp;&nbsp;• Tap a box once: put ✕<br/>
-                   &nbsp;&nbsp;&nbsp;&nbsp;• Tap ✕ again: put 👑<br/>
-                   &nbsp;&nbsp;&nbsp;&nbsp;• Tap 👑 again: make box empty
+                   &nbsp;&nbsp;&nbsp;&nbsp;• Tap a box once to put ✕.<br/>
+                   &nbsp;&nbsp;&nbsp;&nbsp;• Tap an ✕ to put 👑.<br/>
+                   &nbsp;&nbsp;&nbsp;&nbsp;• Tap a 👑 to make the box empty.
                 </p>
-                <p><strong>3. Important:</strong> Two 👑 cannot be next to each other. Not even corner to corner. If 👑 are wrong, they will turn red.</p>
+                <p><strong>3. Important:</strong> Two 👑 cannot touch – not even on corners. Wrong 👑 will turn red.</p>
                 <p><strong>4. Stuck?</strong> Click "Hint" button. You have 5 hints.</p>
             </div>
         </div>
@@ -322,7 +322,7 @@
             
             gameBoardElement.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
             gameBoardElement.style.gridTemplateRows = `repeat(${config.rows}, 1fr)`;
-            difficultyDisplay.textContent = `Difficulty: ${config.difficulty}`; // Will always be "Very Hard"
+            difficultyDisplay.textContent = `Difficulty: ${config.difficulty}`; 
             
             newGameButton.classList.remove('button-attention'); 
             newGameButton.classList.add('button-success');
