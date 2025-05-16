@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crown Puzzle Game - Advanced</title>
+    <title>Crown Puzzle Game - 9x9</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -14,46 +14,52 @@
         .grid-container {
             display: grid;
             border: 2px solid #4A5568; /* cool-gray-700 */
-            touch-action: manipulation;
+            touch-action: manipulation; 
         }
         .cell {
             width: 100%;
-            aspect-ratio: 1 / 1;
+            aspect-ratio: 1 / 1; 
             display: flex;
             justify-content: center;
             align-items: center;
             border: 1px solid #CBD5E0; /* cool-gray-300 */
-            font-size: clamp(1rem, 4vw, 1.8rem);
+            font-size: clamp(0.6rem, 2.5vw, 1.2rem); 
             cursor: pointer;
-            user-select: none;
+            user-select: none; 
             transition: background-color 0.2s ease, box-shadow 0.1s ease, border-color 0.1s ease;
             position: relative;
         }
         .cell.disabled {
-            background-color: #E2E8F0;
+            background-color: #E2E8F0; 
             cursor: not-allowed;
         }
         .cell-content {
-            pointer-events: none;
+            pointer-events: none; 
             transition: opacity 0.2s ease;
         }
         .cell-error .cell-content { color: #C53030; }
-        .cell-error { box-shadow: inset 0 0 0 3px #F56565; }
+        .cell-error { box-shadow: inset 0 0 0 2px #F56565 !important; }
         .cell-hint {
             animation: pulseHintBorder 1.5s infinite;
         }
         @keyframes pulseHintBorder {
-            0% { box-shadow: inset 0 0 0 3px rgba(59, 130, 246, 0.7); } /* blue-500 */
-            50% { box-shadow: inset 0 0 0 3px rgba(59, 130, 246, 1); }
-            100% { box-shadow: inset 0 0 0 3px rgba(59, 130, 246, 0.7); }
+            0% { box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.7); } 
+            50% { box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 1); }
+            100% { box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.7); }
         }
+        .cell-solution-correct .cell-content { color: #059669; }
+        .cell-solution-correct { box-shadow: inset 0 0 0 2px #10B981 !important; }
+        .cell-solution-missed .cell-content { color: #60A5FA; opacity: 0.7; }
+        .cell-solution-missed { background-color: #EFF6FF; }
+        .cell-player-wrong-queen .cell-content { color: #EF4444; }
+        .cell-player-wrong-queen { box-shadow: inset 0 0 0 2px #F87171 !important; }
 
         .button {
             padding: 0.6rem 1.2rem; border-radius: 0.5rem; font-weight: 500;
             transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .button:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .button:hover:not(:disabled) { box-shadow: 0 4px 8px rgba(0,0,0,0.15); } 
         .button:disabled { opacity: 0.5; cursor: not-allowed; }
         .button-primary { background-color: #4F46E5; color: white; }
         .button-primary:hover:not(:disabled) { background-color: #4338CA; }
@@ -61,9 +67,10 @@
         .button-secondary:hover:not(:disabled) { background-color: #4B5563; }
         .button-success { background-color: #10B981; color: white; }
         .button-success:hover:not(:disabled) { background-color: #059669; }
-        .button-hint { background-color: #3B82F6; color: white; } /* blue-500 */
-        .button-hint:hover:not(:disabled) { background-color: #2563EB; } /* blue-600 */
-
+        .button-hint { background-color: #3B82F6; color: white; } 
+        .button-hint:hover:not(:disabled) { background-color: #2563EB; }
+        .button-attention { background-color: #F59E0B; color: white; } 
+        .button-attention:hover:not(:disabled) { background-color: #D97706; }
 
         .message-box { min-height: 2rem; padding: 0.5rem; border-radius: 0.375rem; margin-top: 1rem; font-weight: 500; }
         .message-success { background-color: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
@@ -86,10 +93,9 @@
         .stat-label { font-size: 0.75rem; color: #6B7280; text-transform: uppercase; margin-bottom: 0.125rem; }
         .stat-value { font-size: 1.25rem; font-weight: 600; color: #1F2937; }
 
-        /* Win Modal Styles */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-content { background-color: white; padding: 2rem; border-radius: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; position: relative; background-image: radial-gradient(circle, #a8e063 10%, #56ab2f 100%); /* Confetti-like gradient */ color: white; }
+        .modal-content { background-color: white; padding: 2rem; border-radius: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; position: relative; background-image: radial-gradient(circle, #a8e063 10%, #56ab2f 100%); color: white; }
         .modal-title { font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
         .modal-text { font-size: 1.1rem; margin-bottom: 0.5rem; color: #f0f0f0; }
         .modal-text strong { color: #fff; font-weight: bold; }
@@ -101,7 +107,7 @@
 <body class="bg-gray-100 text-gray-800 flex flex-col items-center justify-center min-h-screen p-2 sm:p-4">
 
     <div class="w-full max-w-lg bg-white p-4 sm:p-6 rounded-xl shadow-2xl">
-        <h1 class="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-3">Crown Puzzle Game</h1>
+        <h1 class="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-3">Crown Puzzle Game (9x9)</h1>
 
         <div class="game-info-bar">
             <div id="timer-display" class="game-info-item">Time: 00:00</div>
@@ -115,11 +121,15 @@
                 <h2 class="text-lg font-semibold text-indigo-700">How to Play</h2>
                 <span id="rulesArrow" class="arrow-down text-indigo-700"></span>
             </div>
-            <div id="rulesContent" class="rules-content mt-2 text-sm text-gray-700 space-y-1">
-                <p>1. Your goal is to have exactly one 👑 in each row, column, and color region.</p>
-                <p>2. Tap a cell to place ✕ (mark), tap again for 👑, and tap again to clear.</p>
-                <p>3. Two 👑 cannot touch each other, not even diagonally. Conflicting 👑 will be highlighted.</p>
-                <p>4. Use the "Hint" button (max 5 per game) if you get stuck!</p>
+            <div id="rulesContent" class="rules-content mt-2 text-sm text-gray-700 space-y-2"> 
+                <p><strong>1. Goal:</strong> Put one 👑 in every row. Put one 👑 in every column. Put one 👑 in every colored area.</p>
+                <p><strong>2. How to Mark:</strong><br/>
+                   &nbsp;&nbsp;&nbsp;&nbsp;• Tap a box once: put ✕<br/>
+                   &nbsp;&nbsp;&nbsp;&nbsp;• Tap ✕ again: put 👑<br/>
+                   &nbsp;&nbsp;&nbsp;&nbsp;• Tap 👑 again: make box empty
+                </p>
+                <p><strong>3. Important:</strong> Two 👑 cannot be next to each other. Not even corner to corner. If 👑 are wrong, they will turn red.</p>
+                <p><strong>4. Stuck?</strong> Click "Hint" button. You have 5 hints.</p>
             </div>
         </div>
 
@@ -130,11 +140,11 @@
             <button id="new-game-button" class="button button-success">New Game</button>
             <button id="undo-button" class="button button-secondary">Undo</button>
             <button id="reset-button" class="button button-secondary">Reset</button>
-            <button id="hint-button" class="button button-hint">Hint (<span id="hint-count">5</span>)</button>
+            <button id="hint-button" class="button button-hint">Hint (5)</button> 
         </div>
 
         <div id="message-area" class="message-box text-center">
-            Welcome! Click 'New Game' to start.
+            Welcome! Starting a new game...
         </div>
 
         <div class="stats-area">
@@ -168,78 +178,36 @@
 
 
     <script>
-        // --- Game Constants ---
-        const GRID_SIZE = 6; 
         const EMPTY = 0;
         const MARK_X = 1;
         const QUEEN = 2; 
         const CELL_SYMBOLS = ['', '✕', '👑'];
         const MAX_HINTS = 5;
-
-        // --- Predefined Puzzle Configurations ---
-        const allPuzzleConfigs = [
-            {
-                difficulty: "Easy", rows: 6, cols: 6,
-                regions: [ { id: 1, name: 'E1', color: '#E0BBE4', cells: [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]] }, { id: 2, name: 'E2', color: '#957DAD', cells: [[0,3],[0,4],[0,5],[1,3],[1,4],[1,5]] }, { id: 3, name: 'E3', color: '#D291BC', cells: [[2,0],[2,1],[2,2],[3,0],[3,1],[3,2]] }, { id: 4, name: 'E4', color: '#FEC8D8', cells: [[2,3],[2,4],[2,5],[3,3],[3,4],[3,5]] }, { id: 5, name: 'E5', color: '#FFDFD3', cells: [[4,0],[4,1],[4,2],[5,0],[5,1],[5,2]] }, { id: 6, name: 'E6', color: '#F6E5F5', cells: [[4,3],[4,4],[4,5],[5,3],[5,4],[5,5]] }, ],
-                solutionBoard: [ 
-                    [EMPTY,EMPTY,EMPTY,QUEEN,EMPTY,EMPTY], [QUEEN,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY], [EMPTY,EMPTY,QUEEN,EMPTY,EMPTY,EMPTY], [EMPTY,QUEEN,EMPTY,EMPTY,EMPTY,EMPTY], [EMPTY,EMPTY,EMPTY,EMPTY,QUEEN,EMPTY], [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,QUEEN]
-                ]
-            },
-            {
-                difficulty: "Medium", rows: 6, cols: 6,
-                regions: [ { id: 1, name: 'M1', color: '#E0BBE4', cells: [[0,0],[0,1],[1,0],[1,1]] }, { id: 2, name: 'M2', color: '#957DAD', cells: [[0,2],[0,3],[1,2],[1,3]] }, { id: 3, name: 'M3', color: '#D291BC', cells: [[0,4],[0,5],[1,4],[1,5]] }, { id: 4, name: 'M4', color: '#FEC8D8', cells: [[2,0],[2,1],[3,0],[3,1]] }, { id: 5, name: 'M5', color: '#FFDFD3', cells: [[2,2],[2,3],[3,2],[3,3]] }, { id: 6, name: 'M6', color: '#F6E5F5', cells: [[2,4],[2,5],[3,4],[3,5]] }, { id: 7, name: 'M7', color: '#BCE2E8', cells: [[4,0],[4,1],[5,0],[5,1]] }, { id: 8, name: 'M8', color: '#92C7CF', cells: [[4,2],[4,3],[5,2],[5,3]] }, { id: 9, name: 'M9', color: '#6497B1', cells: [[4,4],[4,5],[5,4],[5,5]] } ],
-                solutionBoard: [
-                    [QUEEN,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY], [EMPTY,EMPTY,QUEEN,EMPTY,EMPTY,EMPTY], [EMPTY,QUEEN,EMPTY,EMPTY,EMPTY,EMPTY], [EMPTY,EMPTY,EMPTY,EMPTY,QUEEN,EMPTY], [EMPTY,EMPTY,EMPTY,QUEEN,EMPTY,EMPTY], [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,QUEEN]
-                ]
-            },
-            {
-                difficulty: "Hard", rows: 6, cols: 6, 
-                regions: [ { id: 1, name: 'H1', color: '#A1C181', cells: [[0,0],[1,0],[2,0],[0,1]] }, { id: 2, name: 'H2', color: '#F9DC5C', cells: [[0,2],[1,1],[1,2],[2,1]] }, { id: 3, name: 'H3', color: '#E88D67', cells: [[0,3],[0,4],[1,3],[2,2]] }, { id: 4, name: 'H4', color: '#C44536', cells: [[0,5],[1,4],[1,5],[2,3]] }, { id: 5, name: 'H5', color: '#772E25', cells: [[2,4],[2,5],[3,5],[4,5]] }, { id: 6, name: 'H6', color: '#4A442D', cells: [[3,0],[4,0],[5,0],[3,1]] }, { id: 7, name: 'H7', color: '#ADC698', cells: [[3,2],[4,1],[4,2],[5,1]] }, { id: 8, name: 'H8', color: '#F0F4C3', cells: [[3,3],[3,4],[4,3],[5,2]] }, { id: 9, name: 'H9', color: '#D7BDE2', cells: [[4,4],[5,3],[5,4],[5,5]] } ],
-                solutionBoard: [
-                    [EMPTY,QUEEN,EMPTY,EMPTY,EMPTY,EMPTY], [EMPTY,EMPTY,EMPTY,QUEEN,EMPTY,EMPTY], [QUEEN,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY], [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,QUEEN], [EMPTY,EMPTY,QUEEN,EMPTY,EMPTY,EMPTY], [EMPTY,EMPTY,EMPTY,EMPTY,QUEEN,EMPTY]
-                ]
-            },
+        
+        const allPuzzleConfigs = [ // Now only contains the 9x9 puzzle
             { 
-                difficulty: "Expert", rows: 6, cols: 6, // Zigzag configuration
-                regions: [
-                    { id: 1, name: 'Z1', color: '#FFADAD', cells: [[0,0],[0,1],[1,1],[1,2],[2,2],[2,3]] }, 
-                    { id: 2, name: 'Z2', color: '#FFD6A5', cells: [[0,2],[0,3],[0,4],[1,3],[1,4],[1,5]] }, 
-                    { id: 3, name: 'Z3', color: '#FDFFB6', cells: [[2,0],[3,0],[3,1],[4,1],[4,2],[5,2]] }, 
-                    { id: 4, name: 'Z4', color: '#CAFFBF', cells: [[2,4],[2,5],[3,3],[3,4],[4,3],[4,4]] }, 
-                    { id: 5, name: 'Z5', color: '#9BF6FF', cells: [[1,0],[2,1],[3,2],[4,0],[5,0],[5,1]] }, 
-                    { id: 6, name: 'Z6', color: '#A0C4FF', cells: [[0,5],[3,5],[4,5],[5,3],[5,4],[5,5]] }
-                ],
-                solutionBoard: [ 
-                    [QUEEN,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY],
-                    [EMPTY,EMPTY,QUEEN,EMPTY,EMPTY,EMPTY],
-                    [EMPTY,EMPTY,EMPTY,EMPTY,QUEEN,EMPTY],
-                    [EMPTY,QUEEN,EMPTY,EMPTY,EMPTY,EMPTY],
-                    [EMPTY,EMPTY,EMPTY,QUEEN,EMPTY,EMPTY],
-                    [EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,QUEEN]
-                ]
-            },
-            { // New "Fragmented" puzzle
-                difficulty: "Insane", rows: 6, cols: 6,
-                regions: [
-                    { id: 1, name: 'F1', color: '#800080', cells: [[0,1], [0,0], [5,5], [4,5], [0,4], [1,4]] }, // Purple
-                    { id: 2, name: 'F2', color: '#008080', cells: [[1,3], [1,2], [2,2], [0,5], [1,5], [2,0]] }, // Teal
-                    { id: 3, name: 'F3', color: '#FFC0CB', cells: [[2,5], [3,5], [4,4], [5,0], [0,2], [1,0]] }, // Pink
-                    { id: 4, name: 'F4', color: '#A52A2A', cells: [[3,0], [4,0], [5,1], [0,3], [1,1], [2,1]] }, // Brown
-                    { id: 5, name: 'F5', color: '#FFA500', cells: [[4,2], [5,2], [5,3], [2,3], [3,1], [3,2]] }, // Orange
-                    { id: 6, name: 'F6', color: '#C0C0C0', cells: [[5,4], [4,1], [3,3], [2,4], [3,4], [4,3]] }  // Silver
-                ],
-                solutionBoard: [ 
-                    [EMPTY, QUEEN, EMPTY, EMPTY, EMPTY, EMPTY], 
-                    [EMPTY, EMPTY, EMPTY, QUEEN, EMPTY, EMPTY], 
-                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, QUEEN], 
-                    [QUEEN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY], 
-                    [EMPTY, EMPTY, QUEEN, EMPTY, EMPTY, EMPTY],  
-                    [EMPTY, EMPTY, EMPTY, EMPTY, QUEEN, EMPTY] 
-                ]
+                difficulty: "Very Hard", rows: 9, cols: 9, durationSeconds: 10 * 60, // 600 seconds for 9x9
+                regions: (function() { 
+                    const regions = []; let regionId = 1;
+                    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FED766', '#2AB7CA', '#F0B67F', '#FE4A49', '#547980', '#E8DDCB'];
+                    for (let rOffset = 0; rOffset < 9; rOffset += 3) {
+                        for (let cOffset = 0; cOffset < 9; cOffset += 3) {
+                            const cells = [];
+                            for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) cells.push([rOffset + r, cOffset + c]);
+                            regions.push({ id: regionId, name: `VH${regionId}`, color: colors[regionId-1], cells: cells });
+                            regionId++;
+                        }
+                    } return regions;
+                })(),
+                solutionBoard: (function() { 
+                    const N = 9; const s = [0, 2, 4, 6, 8, 1, 3, 5, 7]; 
+                    const board = Array(N).fill(null).map(() => Array(N).fill(EMPTY));
+                    for (let c = 0; c < N; c++) board[s[c]][c] = QUEEN;
+                    return board;
+                })()
             }
         ];
 
-        // --- Game State ---
         let board = [];
         let errorBoard = [];
         let moveHistory = [];
@@ -251,18 +219,16 @@
             bestTimeOverall: Infinity, 
             totalTimeForWins: 0, gamesWonForAvg: 0
         };
-        let timerSeconds = 0;
+        let timerSeconds; 
         let timerIntervalId = null;
         let gameInProgress = false;
         let hintedCell = null; 
 
-        // --- DOM Elements ---
         const gameBoardElement = document.getElementById('game-board');
         const newGameButton = document.getElementById('new-game-button');
         const undoButton = document.getElementById('undo-button');
         const resetButton = document.getElementById('reset-button');
         const hintButton = document.getElementById('hint-button');
-        const hintCountDisplay = document.getElementById('hint-count');
         const messageArea = document.getElementById('message-area');
         const rulesToggle = document.getElementById('rulesToggle');
         const rulesContent = document.getElementById('rulesContent');
@@ -280,20 +246,17 @@
         const winAvgTime = document.getElementById('win-avg-time');
         const winModalCloseBtn = document.getElementById('win-modal-close-btn');
 
-
-        // --- Game Logic Functions ---
         function loadStats() {
-            const storedStats = localStorage.getItem('crownPuzzleStats_v3'); // Using v3 for consistency
+            const storedStats = localStorage.getItem('crownPuzzleStats_9x9_v1'); 
             if (storedStats) {
                 const parsedStats = JSON.parse(storedStats);
                 gameStats = {...gameStats, ...parsedStats}; 
                 if (gameStats.bestTimeOverall === null) gameStats.bestTimeOverall = Infinity; 
             }
-            updateStatsDisplay();
         }
 
         function saveStats() {
-            localStorage.setItem('crownPuzzleStats_v3', JSON.stringify(gameStats));
+            localStorage.setItem('crownPuzzleStats_9x9_v1', JSON.stringify(gameStats));
             updateStatsDisplay();
         }
 
@@ -305,25 +268,32 @@
             winPercentageDisplay.textContent = `${winPct}%`;
             attemptNumberDisplay.textContent = `#${gameStats.currentAttemptNumber || 0}`;
             mistakesDisplay.textContent = `Mistakes: ${gameStats.mistakesThisGame || 0}`;
-            hintCountDisplay.textContent = gameStats.hintsLeft;
-            hintButton.disabled = gameStats.hintsLeft <= 0 || !gameInProgress;
+            
+            if (!gameInProgress || gameStats.hintsLeft <= 0) { 
+                hintButton.innerHTML = 'No Hints Left';
+                hintButton.disabled = true;
+            } else {
+                hintButton.innerHTML = `Hint (<span id="hint-count">${gameStats.hintsLeft}</span>)`;
+                hintButton.disabled = false;
+            }
         }
         
-        function formatTime(totalSeconds, includeLabel = true) {
-            if (totalSeconds === Infinity || totalSeconds === null || isNaN(totalSeconds)) return includeLabel ? "N/A" : "N/A";
+        function formatTime(totalSeconds) {
             const minutes = Math.floor(totalSeconds / 60);
             const seconds = totalSeconds % 60;
-            const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            return includeLabel ? `Time: ${timeStr}` : timeStr;
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
         function startTimer() {
             stopTimer(); 
-            timerSeconds = 0;
-            timerDisplay.textContent = formatTime(timerSeconds);
+            timerSeconds = currentPuzzleConfig.durationSeconds; 
+            timerDisplay.textContent = `Time: ${formatTime(timerSeconds)}`;
             timerIntervalId = setInterval(() => {
-                timerSeconds++;
-                timerDisplay.textContent = formatTime(timerSeconds);
+                timerSeconds--;
+                timerDisplay.textContent = `Time: ${formatTime(timerSeconds)}`;
+                if (timerSeconds <= 0) {
+                    handleGameOver();
+                }
             }, 1000);
         }
 
@@ -334,14 +304,15 @@
 
         function initializeBoard(config) {
             currentPuzzleConfig = config;
-            const N = config.rows;
+            const N = config.rows; 
             board = Array(N).fill(null).map(() => Array(N).fill(EMPTY));
             errorBoard = Array(N).fill(null).map(() => Array(N).fill(false));
             moveHistory = [];
             cellToRegionMap = {};
-            gameStats.mistakesThisGame = 0;
-            gameStats.hintsLeft = MAX_HINTS;
+            gameStats.mistakesThisGame = 0; 
+            gameStats.hintsLeft = MAX_HINTS; 
             hintedCell = null;
+            winModalOverlay.classList.remove('active'); 
 
             config.regions.forEach(region => {
                 region.cells.forEach(([r, c]) => {
@@ -351,14 +322,20 @@
             
             gameBoardElement.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
             gameBoardElement.style.gridTemplateRows = `repeat(${config.rows}, 1fr)`;
-            difficultyDisplay.textContent = `Difficulty: ${config.difficulty}`;
-            updateStatsDisplay();
+            difficultyDisplay.textContent = `Difficulty: ${config.difficulty}`; // Will always be "Very Hard"
+            
+            newGameButton.classList.remove('button-attention'); 
+            newGameButton.classList.add('button-success');
+            undoButton.disabled = false;
+            resetButton.disabled = false;
+
+            updateStatsDisplay(); 
             renderBoard();
         }
         
         function validateAllQueens() {
             if (!currentPuzzleConfig) return;
-            const N = currentPuzzleConfig.rows;
+            const N = currentPuzzleConfig.rows; 
             errorBoard = Array(N).fill(null).map(() => Array(N).fill(false)); 
 
             let queens = [];
@@ -397,14 +374,17 @@
             });
         }
 
-        function renderBoard() {
+        function renderBoard(isSolutionView = false) {
             if (!currentPuzzleConfig) { 
                 gameBoardElement.innerHTML = '<div class="p-8 text-center text-gray-500">Click "New Game" to start.</div>';
                 return;
             }
             gameBoardElement.innerHTML = '';
-            for (let r = 0; r < currentPuzzleConfig.rows; r++) {
-                for (let c = 0; c < currentPuzzleConfig.cols; c++) {
+            const N = currentPuzzleConfig.rows; 
+            const solution = currentPuzzleConfig.solutionBoard;
+
+            for (let r = 0; r < N; r++) {
+                for (let c = 0; c < N; c++) {
                     const cellElement = document.createElement('div');
                     cellElement.classList.add('cell');
                     cellElement.dataset.row = r;
@@ -416,20 +396,44 @@
                     
                     const cellContentElement = document.createElement('span');
                     cellContentElement.classList.add('cell-content');
-                    cellContentElement.textContent = CELL_SYMBOLS[board[r][c]];
+                    
+                    if (isSolutionView) {
+                        const playerMark = board[r][c];
+                        const solutionMark = solution[r][c];
+                        cellElement.classList.remove('cell-error', 'cell-hint', 'cell-solution-correct', 'cell-player-wrong-queen', 'cell-solution-missed');
+
+                        if (solutionMark === QUEEN) {
+                            cellContentElement.textContent = CELL_SYMBOLS[QUEEN];
+                            if (playerMark === QUEEN) {
+                                cellElement.classList.add('cell-solution-correct');
+                            } else {
+                                cellElement.classList.add('cell-solution-missed');
+                            }
+                        } else if (playerMark === QUEEN) { 
+                            cellContentElement.textContent = CELL_SYMBOLS[QUEEN];
+                            cellElement.classList.add('cell-player-wrong-queen');
+                        } else if (playerMark === MARK_X) { 
+                             cellContentElement.textContent = CELL_SYMBOLS[MARK_X];
+                        } else {
+                            cellContentElement.textContent = CELL_SYMBOLS[EMPTY];
+                        }
+                    } else { 
+                        cellContentElement.textContent = CELL_SYMBOLS[board[r][c]];
+                        if (board[r][c] === QUEEN && errorBoard[r][c]) cellElement.classList.add('cell-error');
+                        else cellElement.classList.remove('cell-error');
+
+                        if (hintedCell && hintedCell.r === r && hintedCell.c === c) {
+                            cellElement.classList.add('cell-hint');
+                        } else {
+                            cellElement.classList.remove('cell-hint');
+                        }
+                    }
                     cellElement.appendChild(cellContentElement);
 
-                    if (board[r][c] === QUEEN && errorBoard[r][c]) cellElement.classList.add('cell-error');
-                    else cellElement.classList.remove('cell-error');
-
-                    if (hintedCell && hintedCell.r === r && hintedCell.c === c) {
-                        cellElement.classList.add('cell-hint');
-                    } else {
-                        cellElement.classList.remove('cell-hint');
-                    }
-
-                    if (!cellElement.classList.contains('disabled')) {
+                    if (!isSolutionView && !cellElement.classList.contains('disabled')) {
                         cellElement.addEventListener('click', () => handleCellClick(r, c));
+                    } else if (isSolutionView) {
+                        cellElement.style.cursor = 'default'; 
                     }
                     gameBoardElement.appendChild(cellElement);
                 }
@@ -437,8 +441,7 @@
         }
 
         function handleCellClick(r, c) {
-            if (!gameInProgress) {
-                updateMessage("Start a new game or reset the current one to make moves.", "info");
+            if (!gameInProgress) { 
                 return;
             }
             if (hintedCell) {
@@ -474,13 +477,10 @@
         
         function checkWinCondition() {
             if (!currentPuzzleConfig || !gameInProgress) return false;
-        
             validateAllQueens(); 
-        
             let queenCount = 0;
             let hasError = false;
-            const N = currentPuzzleConfig.rows;
-        
+            const N = currentPuzzleConfig.rows; 
             for (let r = 0; r < N; r++) {
                 for (let c = 0; c < N; c++) {
                     if (board[r][c] === QUEEN) {
@@ -491,51 +491,69 @@
                     }
                 }
             }
-        
             if (hasError || queenCount !== N) {
                 return false; 
             }
             return true;
         }
 
+        function handleGameOver() {
+            stopTimer();
+            if (gameInProgress) { 
+                gameStats.losses++;
+                saveStats(); 
+            }
+            gameInProgress = false; 
+            updateMessage("Time's up! Solution and your errors are shown.", "error");
+            renderBoard(true); 
+
+            newGameButton.classList.remove('button-success');
+            newGameButton.classList.add('button-attention');
+            undoButton.disabled = true;
+            resetButton.disabled = true;
+            hintButton.disabled = true; 
+            updateStatsDisplay(); 
+        }
 
         function triggerWinSequence() {
             stopTimer();
             gameInProgress = false;
             gameStats.wins++;
             
-            if (timerSeconds < gameStats.bestTimeOverall) {
-                gameStats.bestTimeOverall = timerSeconds;
+            const timeTaken = currentPuzzleConfig.durationSeconds - timerSeconds;
+            if (timeTaken < gameStats.bestTimeOverall) {
+                gameStats.bestTimeOverall = timeTaken;
             }
-            gameStats.totalTimeForWins += timerSeconds;
+            gameStats.totalTimeForWins += timeTaken;
             gameStats.gamesWonForAvg++;
             
             saveStats();
 
-            winTimeCompleted.innerHTML = `Time: <strong>${formatTime(timerSeconds, false)}</strong>`;
-            winBestTime.innerHTML = `Best Time: <strong>${formatTime(gameStats.bestTimeOverall, false)}</strong>`;
+            winTimeCompleted.innerHTML = `Time: <strong>${formatTime(timeTaken)}</strong>`;
+            winBestTime.innerHTML = `Best Time: <strong>${formatTime(gameStats.bestTimeOverall)}</strong>`;
             const avgTime = gameStats.gamesWonForAvg > 0 ? gameStats.totalTimeForWins / gameStats.gamesWonForAvg : Infinity;
-            winAvgTime.innerHTML = `Average Win Time: <strong>${formatTime(avgTime, false)}</strong>`;
+            winAvgTime.innerHTML = `Average Win Time: <strong>${formatTime(avgTime)}</strong>`;
             
             winModalOverlay.classList.add('active');
-            hintButton.disabled = true; 
+            updateStatsDisplay(); 
         }
 
         function startNewGameCycle() {
-            if (gameInProgress) { 
-                gameStats.losses++;
-                updateMessage("Previous game counted as a loss. Starting new game.", "info");
+            if (gameInProgress && moveHistory.length > 0 && !winModalOverlay.classList.contains('active') && timerSeconds > 0 ) { 
+                let wasWon = currentPuzzleConfig ? checkWinCondition() : false;
+                if (!wasWon) {
+                    gameStats.losses++;
+                }
             }
             
-            gameStats.currentAttemptNumber++;
-            const puzzleIndex = (gameStats.currentAttemptNumber - 1) % allPuzzleConfigs.length;
+            gameStats.currentAttemptNumber = (gameStats.currentAttemptNumber || 0) + 1;
+            const puzzleIndex = 0; // Always use the first (and only) puzzle config for 9x9
             initializeBoard(allPuzzleConfigs[puzzleIndex]);
             
             startTimer();
             gameInProgress = true;
             saveStats(); 
             updateMessage(`Attempt #${gameStats.currentAttemptNumber} (${currentPuzzleConfig.difficulty}) started. Good luck!`, "info");
-            hintButton.disabled = false; 
         }
 
         function resetCurrentPuzzle() {
@@ -544,10 +562,9 @@
                 return;
             }
             initializeBoard(currentPuzzleConfig); 
-            startTimer();
+            startTimer(); 
             gameInProgress = true;
             updateMessage("Current puzzle reset. Timer restarted.", "info");
-            hintButton.disabled = false; 
         }
         
         function undoMove() {
@@ -570,17 +587,32 @@
         }
         
         function provideHint() {
-            if (!gameInProgress || gameStats.hintsLeft <= 0 || !currentPuzzleConfig.solutionBoard) return;
+            if (!gameInProgress) {
+                updateMessage("Cannot provide hint: game not in progress.", "info");
+                return;
+            }
+            if (!currentPuzzleConfig || !currentPuzzleConfig.solutionBoard) {
+                updateMessage("Cannot provide hint: puzzle not loaded correctly.", "info");
+                return;
+            }
+            
+            if (gameStats.hintsLeft <= 0) {
+                updateMessage("No hints left!", "info");
+                updateStatsDisplay(); 
+                return; 
+            }
 
             if (hintedCell) { 
                 const prevHintedElement = gameBoardElement.querySelector(`.cell[data-row='${hintedCell.r}'][data-col='${hintedCell.c}']`);
                 if (prevHintedElement) prevHintedElement.classList.remove('cell-hint');
                 hintedCell = null;
             }
+            
+            gameStats.hintsLeft--; 
 
-            const N = currentPuzzleConfig.rows;
+            const N = currentPuzzleConfig.rows; 
             const solution = currentPuzzleConfig.solutionBoard;
-            let hintGiven = false;
+            let visualHintGiven = false; 
 
             const unplacedSolutionQueens = [];
             for (let r = 0; r < N; r++) {
@@ -607,50 +639,30 @@
                     }, 3000); 
                 }
                 updateMessage(`Hint: Consider this cell for a queen.`, "info");
-                hintGiven = true;
-            }
-
-
-            if (!hintGiven) {
+                visualHintGiven = true;
+            } else {
                 updateMessage("All solution queens are on the board. Check for errors or remove extra queens.", "info");
             }
-
-            gameStats.hintsLeft--;
+            
             updateStatsDisplay(); 
-            if (gameStats.hintsLeft <= 0) {
-                hintButton.disabled = true;
-            }
+            saveStats(); 
         }
 
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats(); 
+            startNewGameCycle(); 
+        });
 
-        // --- Event Listeners ---
         newGameButton.addEventListener('click', startNewGameCycle);
         undoButton.addEventListener('click', undoMove);
         resetButton.addEventListener('click', resetCurrentPuzzle);
         hintButton.addEventListener('click', provideHint);
-
         rulesToggle.addEventListener('click', () => {
             rulesContent.classList.toggle('open');
             rulesArrow.classList.toggle('arrow-up');
         });
-        
         winModalCloseBtn.addEventListener('click', () => {
             winModalOverlay.classList.remove('active');
-        });
-        
-        // --- Initialize Game ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadStats();
-            if (gameStats.currentAttemptNumber === 0) { 
-                 updateMessage("Welcome! Click 'New Game' to begin your first puzzle.", "info");
-                 difficultyDisplay.textContent = "Difficulty: N/A"; 
-                 attemptNumberDisplay.textContent = "#0";
-                 mistakesDisplay.textContent = "Mistakes: 0";
-                 hintCountDisplay.textContent = MAX_HINTS; 
-            } else {
-                updateMessage(`Welcome back! Click 'New Game' to continue or start a new puzzle.`, "info");
-            }
-            renderBoard(); 
         });
 
     </script>
