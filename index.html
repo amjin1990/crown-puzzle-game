@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crown Puzzle Game - 9x9</title>
+    <title>Crown Puzzle Game - Expanded Puzzles</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -13,7 +13,7 @@
         }
         .grid-container {
             display: grid;
-            border: 2px solid #4A5568; /* cool-gray-700 */
+            border: 2px solid #2D3748; /* cool-gray-800 */
             touch-action: manipulation; 
         }
         .cell {
@@ -22,8 +22,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            border: 1px solid #CBD5E0; /* cool-gray-300 */
-            font-size: clamp(0.6rem, 2.5vw, 1.2rem); 
+            border: 1px solid #718096; /* cool-gray-500 */
+            font-size: clamp(0.5rem, 2vw, 1rem); 
             cursor: pointer;
             user-select: none; 
             transition: background-color 0.2s ease, box-shadow 0.1s ease, border-color 0.1s ease;
@@ -36,9 +36,10 @@
         .cell-content {
             pointer-events: none; 
             transition: opacity 0.2s ease;
+            color: #1A202C; 
         }
         .cell-error .cell-content { color: #C53030; }
-        .cell-error { box-shadow: inset 0 0 0 2px #F56565 !important; }
+        .cell-error { box-shadow: inset 0 0 0 2px #E53E3E !important; }
         .cell-hint {
             animation: pulseHintBorder 1.5s infinite;
         }
@@ -47,12 +48,12 @@
             50% { box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 1); }
             100% { box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.7); }
         }
-        .cell-solution-correct .cell-content { color: #059669; }
-        .cell-solution-correct { box-shadow: inset 0 0 0 2px #10B981 !important; }
-        .cell-solution-missed .cell-content { color: #60A5FA; opacity: 0.7; }
-        .cell-solution-missed { background-color: #EFF6FF; }
-        .cell-player-wrong-queen .cell-content { color: #EF4444; }
-        .cell-player-wrong-queen { box-shadow: inset 0 0 0 2px #F87171 !important; }
+        .cell-solution-correct .cell-content { color: #2F855A; }
+        .cell-solution-correct { box-shadow: inset 0 0 0 2px #38A169 !important; }
+        .cell-solution-missed .cell-content { color: #2B6CB0; opacity: 0.7; }
+        .cell-solution-missed { background-color: #EBF8FF; }
+        .cell-player-wrong-queen .cell-content { color: #C53030; }
+        .cell-player-wrong-queen { box-shadow: inset 0 0 0 2px #E53E3E !important; }
 
         .button {
             padding: 0.6rem 1.2rem; border-radius: 0.5rem; font-weight: 500;
@@ -107,7 +108,7 @@
 <body class="bg-gray-100 text-gray-800 flex flex-col items-center justify-center min-h-screen p-2 sm:p-4">
 
     <div class="w-full max-w-lg bg-white p-4 sm:p-6 rounded-xl shadow-2xl">
-        <h1 class="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-3">Crown Puzzle Game (9x9)</h1>
+        <h1 id="game-title" class="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-3">Crown Puzzle Game</h1>
 
         <div class="game-info-bar">
             <div id="timer-display" class="game-info-item">Time: 00:00</div>
@@ -122,7 +123,7 @@
                 <span id="rulesArrow" class="arrow-down text-indigo-700"></span>
             </div>
             <div id="rulesContent" class="rules-content mt-2 text-sm text-gray-700 space-y-2"> 
-                <p><strong>1. Goal:</strong> One 👑 (crown) in each row, each column, and each colored area – all at the same time.</p>
+                <p><strong>1. Goal:</strong> One 👑 (crown) in every row, each column, and each colored area – all at the same time.</p>
                 <p><strong>2. How to Mark:</strong><br/>
                    &nbsp;&nbsp;&nbsp;&nbsp;• Tap a box once to put ✕.<br/>
                    &nbsp;&nbsp;&nbsp;&nbsp;• Tap an ✕ to put 👑.<br/>
@@ -184,30 +185,194 @@
         const CELL_SYMBOLS = ['', '✕', '👑'];
         const MAX_HINTS = 5;
         
-        const allPuzzleConfigs = [ // Now only contains the 9x9 puzzle
+        function createSolutionBoard(N, solutionArray_colToRow) {
+            const board = Array(N).fill(null).map(() => Array(N).fill(EMPTY));
+            for (let c = 0; c < N; c++) {
+                if (solutionArray_colToRow[c] !== undefined) { 
+                    board[solutionArray_colToRow[c]][c] = QUEEN;
+                }
+            }
+            return board;
+        }
+
+        const paletteSet1 = ['#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFB6C1']; 
+        const paletteSet2 = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FED766', '#2AB7CA', '#F0B67F', '#FE4A49', '#547980', '#E8DDCB']; 
+        const paletteSet3 = ['#EF476F', '#FFD166', '#06D6A0', '#118AB2', '#073B4C', '#F78154', '#F7B801', '#F15BB5', '#43AA8B', '#577590'];
+        const paletteSet4 = ['#F08080', '#98FB98', '#ADD8E6', '#FAFAD2', '#DDA0DD', '#E6E6FA', '#FFB6C1', '#FFE4B5', '#AFEEEE', '#90EE90', '#FFDEAD', '#B0E0E6'];
+        const paletteSet5 = ['#C39BD3', '#7FB3D5', '#76D7C4', '#F7DC6F', '#F0B27A', '#E59866', '#BFC9CA', '#F1948A', '#85C1E9', '#AED6F1', '#A2D9CE', '#F9E79F', '#D7BDE2', '#A9CCE3'];
+
+        const complexRegions9x9 = [ 
+            { id: 1, name: 'H_CR1', color: paletteSet2[0], cells: [[0,0],[0,1],[1,0],[1,1],[2,0],[0,2],[1,2],[2,1],[2,2]] }, 
+            { id: 2, name: 'H_CR2', color: paletteSet2[1], cells: [[0,3],[1,3],[2,3],[0,4],[1,4],[0,5],[1,5],[2,4],[2,5]] }, 
+            { id: 3, name: 'H_CR3', color: paletteSet2[2], cells: [[0,6],[0,7],[0,8],[1,6],[1,8],[2,6],[2,7],[2,8],[1,7]] }, 
+            { id: 4, name: 'H_CR4', color: paletteSet2[3], cells: [[3,0],[3,1],[4,1],[5,1],[5,0],[4,0],[3,2],[4,2],[5,2]] }, 
+            { id: 5, name: 'H_CR5', color: paletteSet2[4], cells: [[3,3],[3,4],[3,5],[4,3],[4,4],[4,5],[5,3],[5,4],[5,5]] }, 
+            { id: 6, name: 'H_CR6', color: paletteSet2[5], cells: [[3,6],[3,7],[3,8],[4,6],[4,8],[5,6],[5,7],[5,8],[4,7]] }, 
+            { id: 7, name: 'H_CR7', color: paletteSet2[6], cells: [[6,0],[6,1],[7,1],[8,1],[8,0],[7,0],[6,2],[7,2],[8,2]] }, 
+            { id: 8, name: 'H_CR8', color: paletteSet2[7], cells: [[6,3],[7,3],[8,3],[6,4],[7,4],[6,5],[7,5],[8,4],[8,5]] }, 
+            { id: 9, name: 'H_CR9', color: paletteSet2[8], cells: [[6,6],[6,7],[6,8],[7,6],[7,8],[8,6],[8,7],[8,8],[7,7]] }
+        ];
+        const complexRegions10x10 = [ 
+            { id: 1, name: 'VH_CR1', color: paletteSet3[0], cells: [[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[0,2],[1,2],[0,3],[1,3]] },
+            { id: 2, name: 'VH_CR2', color: paletteSet3[1], cells: [[0,4],[0,5],[1,4],[1,5],[2,4],[2,5],[0,6],[1,6],[0,7],[1,7]] },
+            { id: 3, name: 'VH_CR3', color: paletteSet3[2], cells: [[3,0],[3,1],[4,0],[4,1],[5,0],[5,1],[3,2],[4,2],[3,3],[4,3]] },
+            { id: 4, name: 'VH_CR4', color: paletteSet3[3], cells: [[3,4],[3,5],[4,4],[4,5],[5,4],[5,5],[3,6],[4,6],[3,7],[4,7]] },
+            { id: 5, name: 'VH_CR5', color: paletteSet3[4], cells: [[6,0],[6,1],[7,0],[7,1],[8,0],[8,1],[9,0],[9,1],[6,2],[7,2]] },
+            { id: 6, name: 'VH_CR6', color: paletteSet3[5], cells: [[6,3],[6,4],[7,3],[7,4],[8,3],[8,4],[9,3],[9,4],[6,5],[7,5]] },
+            { id: 7, name: 'VH_CR7', color: paletteSet3[6], cells: [[0,8],[0,9],[1,8],[1,9],[2,8],[2,9],[3,8],[3,9],[4,8],[4,9]] },
+            { id: 8, name: 'VH_CR8', color: paletteSet3[7], cells: [[5,8],[5,9],[6,8],[6,9],[7,8],[7,9],[8,8],[8,9],[9,8],[9,9]] },
+            { id: 9, name: 'VH_CR9', color: paletteSet3[8], cells: [[2,2],[2,3],[2,6],[2,7],[5,2],[5,3],[5,6],[5,7],[8,2],[8,5]] }, 
+            { id: 10, name: 'VH_CR10', color: paletteSet3[9], cells: [[9,2],[9,5],[9,6],[9,7],[8,6],[8,7],[6,6],[6,7],[7,6],[7,7]]}
+        ];
+        const complexRegions11x11 = []; const colors11 = paletteSet4;
+        for(let i=0; i<11; i++) { const cells = []; for(let j=0; j<11; j++) { cells.push([j, i]); } complexRegions11x11.push({id: i+1, name: `Ex_CR${i+1}`, color: colors11[i], cells: cells}); }
+        
+        const complexRegions12x12 = []; const colors12 = paletteSet5.slice(0,12);
+        for(let i=0; i<12; i++) { const cells = []; for(let j=0; j<12; j++) { cells.push([j, i]); } complexRegions12x12.push({id: i+1, name: `Ma_CR${i+1}`, color: colors12[i], cells: cells}); }
+        
+        const complexRegions14x14 = []; const colors14 = paletteSet1.concat(paletteSet2.slice(0,6)); 
+        for(let i=0; i<14; i++) { const cells = []; for(let j=0; j<14; j++) { cells.push([j, i]); } complexRegions14x14.push({id: i+1, name: `Le_CR${i+1}`, color: colors14[i % colors14.length], cells: cells}); }
+
+
+        const allPuzzleConfigs = [
+            // --- Super Easy (6x6) ---
             { 
-                difficulty: "Very Hard", rows: 9, cols: 9, durationSeconds: 10 * 60, // 600 seconds for 9x9
-                regions: (function() { 
-                    const regions = []; let regionId = 1;
-                    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FED766', '#2AB7CA', '#F0B67F', '#FE4A49', '#547980', '#E8DDCB'];
-                    for (let rOffset = 0; rOffset < 9; rOffset += 3) {
-                        for (let cOffset = 0; cOffset < 9; cOffset += 3) {
-                            const cells = [];
-                            for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) cells.push([rOffset + r, cOffset + c]);
-                            regions.push({ id: regionId, name: `VH${regionId}`, color: colors[regionId-1], cells: cells });
-                            regionId++;
-                        }
-                    } return regions;
-                })(),
-                solutionBoard: (function() { 
-                    const N = 9; const s = [0, 2, 4, 6, 8, 1, 3, 5, 7]; 
-                    const board = Array(N).fill(null).map(() => Array(N).fill(EMPTY));
-                    for (let c = 0; c < N; c++) board[s[c]][c] = QUEEN;
-                    return board;
-                })()
+                difficulty: "Super Easy", rows: 6, cols: 6, durationSeconds: 5 * 60, 
+                regions: [ { id: 1, name: 'SE1', color: paletteSet1[0], cells: [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]] }, { id: 2, name: 'SE2', color: paletteSet1[1], cells: [[0,3],[0,4],[0,5],[1,3],[1,4],[1,5]] }, { id: 3, name: 'SE3', color: paletteSet1[2], cells: [[2,0],[2,1],[2,2],[3,0],[3,1],[3,2]] }, { id: 4, name: 'SE4', color: paletteSet1[3], cells: [[2,3],[2,4],[2,5],[3,3],[3,4],[3,5]] }, { id: 5, name: 'SE5', color: paletteSet1[4], cells: [[4,0],[4,1],[4,2],[5,0],[5,1],[5,2]] }, { id: 6, name: 'SE6', color: paletteSet1[5], cells: [[4,3],[4,4],[4,5],[5,3],[5,4],[5,5]] }, ],
+                solutionBoard: createSolutionBoard(6, [1,3,5,0,2,4]) 
+            },
+            { 
+                difficulty: "Super Easy B", rows: 6, cols: 6, durationSeconds: 5 * 60, 
+                regions: [ { id: 1, name: 'SEB1', color: paletteSet1[0], cells: [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]] }, { id: 2, name: 'SEB2', color: paletteSet1[1], cells: [[0,3],[0,4],[0,5],[1,3],[1,4],[1,5]] }, { id: 3, name: 'SEB3', color: paletteSet1[2], cells: [[2,0],[2,1],[2,2],[3,0],[3,1],[3,2]] }, { id: 4, name: 'SEB4', color: paletteSet1[3], cells: [[2,3],[2,4],[2,5],[3,3],[3,4],[3,5]] }, { id: 5, name: 'SEB5', color: paletteSet1[4], cells: [[4,0],[4,1],[4,2],[5,0],[5,1],[5,2]] }, { id: 6, name: 'SEB6', color: paletteSet1[5], cells: [[4,3],[4,4],[4,5],[5,3],[5,4],[5,5]] }, ],
+                solutionBoard: createSolutionBoard(6, [2,5,1,4,0,3])
+            },
+            { 
+                difficulty: "Super Easy C", rows: 6, cols: 6, durationSeconds: 5 * 60, 
+                regions: [ { id: 1, name: 'SEC1', color: paletteSet1[0], cells: [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]] }, { id: 2, name: 'SEC2', color: paletteSet1[1], cells: [[0,3],[0,4],[0,5],[1,3],[1,4],[1,5]] }, { id: 3, name: 'SEC3', color: paletteSet1[2], cells: [[2,0],[2,1],[2,2],[3,0],[3,1],[3,2]] }, { id: 4, name: 'SEC4', color: paletteSet1[3], cells: [[2,3],[2,4],[2,5],[3,3],[3,4],[3,5]] }, { id: 5, name: 'SEC5', color: paletteSet1[4], cells: [[4,0],[4,1],[4,2],[5,0],[5,1],[5,2]] }, { id: 6, name: 'SEC6', color: paletteSet1[5], cells: [[4,3],[4,4],[4,5],[5,3],[5,4],[5,5]] }, ],
+                solutionBoard: createSolutionBoard(6, [3,0,4,1,5,2])
+            },
+
+            // --- Easy (7x7) ---
+            {
+                difficulty: "Easy", rows: 7, cols: 7, durationSeconds: 5 * 60,
+                regions: (function() { const r = []; const c = paletteSet1; for (let i = 0; i < 7; i++) { const cells = []; for (let j = 0; j < 7; j++) cells.push([i, j]); r.push({ id: i + 1, name: `E${i+1}`, color: c[i%c.length], cells: cells }); } return r; })(),
+                solutionBoard: createSolutionBoard(7, [0,2,4,6,1,3,5])
+            },
+            {
+                difficulty: "Easy B", rows: 7, cols: 7, durationSeconds: 5 * 60,
+                regions: (function() { const r = []; const c = paletteSet1; for (let i = 0; i < 7; i++) { const cells = []; for (let j = 0; j < 7; j++) cells.push([i, j]); r.push({ id: i + 1, name: `EB${i+1}`, color: c[i%c.length], cells: cells }); } return r; })(),
+                solutionBoard: createSolutionBoard(7, [1,3,5,0,2,4,6])
+            },
+            {
+                difficulty: "Easy C", rows: 7, cols: 7, durationSeconds: 5 * 60,
+                regions: (function() { const r = []; const c = paletteSet1; for (let i = 0; i < 7; i++) { const cells = []; for (let j = 0; j < 7; j++) cells.push([i, j]); r.push({ id: i + 1, name: `EC${i+1}`, color: c[i%c.length], cells: cells }); } return r; })(),
+                solutionBoard: createSolutionBoard(7, [2,5,1,4,0,3,6])
+            },
+
+            // --- Medium (8x8) ---
+            {
+                difficulty: "Medium", rows: 8, cols: 8, durationSeconds: 5 * 60,
+                regions: (function() { const r = []; let id = 1; const c = paletteSet1; for (let i = 0; i < 4; i++) { const ce1 = [], ce2 = []; for (let row = i * 2; row < i * 2 + 2; row++) { for (let col = 0; col < 4; col++) ce1.push([row, col]); for (let col = 4; col < 8; col++) ce2.push([row, col]); } r.push({ id: id, name: `M${id}`, color: c[id-1], cells: ce1 }); id++; r.push({ id: id, name: `M${id}`, color: c[id%c.length], cells: ce2 }); id++; } return r; })(),
+                solutionBoard: createSolutionBoard(8, [0,4,7,5,2,6,1,3])
+            },
+            {
+                difficulty: "Medium B", rows: 8, cols: 8, durationSeconds: 5 * 60,
+                regions: (function() { const r = []; let id = 1; const c = paletteSet1; for (let i = 0; i < 4; i++) { const ce1 = [], ce2 = []; for (let row = i * 2; row < i * 2 + 2; row++) { for (let col = 0; col < 4; col++) ce1.push([row, col]); for (let col = 4; col < 8; col++) ce2.push([row, col]); } r.push({ id: id, name: `MB${id}`, color: c[id-1], cells: ce1 }); id++; r.push({ id: id, name: `MB${id}`, color: c[id%c.length], cells: ce2 }); id++; } return r; })(),
+                solutionBoard: createSolutionBoard(8, [1,5,0,6,3,7,2,4])
+            },
+            {
+                difficulty: "Medium C", rows: 8, cols: 8, durationSeconds: 5 * 60,
+                regions: (function() { const r = []; let id = 1; const c = paletteSet1; for (let i = 0; i < 4; i++) { const ce1 = [], ce2 = []; for (let row = i * 2; row < i * 2 + 2; row++) { for (let col = 0; col < 4; col++) ce1.push([row, col]); for (let col = 4; col < 8; col++) ce2.push([row, col]); } r.push({ id: id, name: `MC${id}`, color: c[id-1], cells: ce1 }); id++; r.push({ id: id, name: `MC${id}`, color: c[id%c.length], cells: ce2 }); id++; } return r; })(),
+                solutionBoard: createSolutionBoard(8, [2,7,3,6,0,5,1,4])
+            },
+            
+            // --- Hard (9x9) with Complex Regions ---
+            { 
+                difficulty: "Hard", rows: 9, cols: 9, durationSeconds: 7.5 * 60, 
+                regions: complexRegions9x9,
+                solutionBoard: createSolutionBoard(9, [0,2,4,6,8,1,3,5,7])
+            },
+            { 
+                difficulty: "Hard B", rows: 9, cols: 9, durationSeconds: 7.5 * 60, 
+                regions: complexRegions9x9, 
+                solutionBoard: createSolutionBoard(9, [1,3,5,7,0,2,4,6,8])
+            },
+            { 
+                difficulty: "Hard C", rows: 9, cols: 9, durationSeconds: 7.5 * 60, 
+                regions: complexRegions9x9, 
+                solutionBoard: createSolutionBoard(9, [2,4,6,8,1,3,5,7,0])
+            },
+
+            // --- Very Hard (10x10) with Complex Regions ---
+            {
+                difficulty: "Very Hard", rows: 10, cols: 10, durationSeconds: 10 * 60,
+                regions: complexRegions10x10,
+                solutionBoard: createSolutionBoard(10, [0,2,5,7,9,1,3,6,8,4])
+            },
+             {
+                difficulty: "Very Hard B", rows: 10, cols: 10, durationSeconds: 10 * 60,
+                regions: complexRegions10x10, 
+                solutionBoard: createSolutionBoard(10, [1,3,6,8,0,2,5,7,9,4]) 
+            },
+            {
+                difficulty: "Very Hard C", rows: 10, cols: 10, durationSeconds: 10 * 60,
+                regions: complexRegions10x10, 
+                solutionBoard: createSolutionBoard(10, [2,5,7,9,1,3,6,8,0,4])
+            },
+
+            // --- Extreme (11x11) with Column Regions ---
+            {
+                difficulty: "Extreme", rows: 11, cols: 11, durationSeconds: 10 * 60,
+                regions: complexRegions11x11,
+                solutionBoard: createSolutionBoard(11, [0,2,4,6,8,10,1,3,5,7,9])
+            },
+            {
+                difficulty: "Extreme B", rows: 11, cols: 11, durationSeconds: 10 * 60,
+                regions: complexRegions11x11, 
+                solutionBoard: createSolutionBoard(11, [1,3,5,7,9,0,2,4,6,8,10])
+            },
+            {
+                difficulty: "Extreme C", rows: 11, cols: 11, durationSeconds: 10 * 60,
+                regions: complexRegions11x11, 
+                solutionBoard: createSolutionBoard(11, [2,4,6,8,10,1,3,5,7,9,0])
+            },
+
+            // --- Master (12x12) with Column Regions ---
+            {
+                difficulty: "Master", rows: 12, cols: 12, durationSeconds: 10 * 60,
+                regions: complexRegions12x12,
+                solutionBoard: createSolutionBoard(12, [0,4,7,10,2,5,11,8,1,3,6,9])
+            },
+            {
+                difficulty: "Master B", rows: 12, cols: 12, durationSeconds: 10 * 60,
+                regions: complexRegions12x12, 
+                solutionBoard: createSolutionBoard(12, [1,3,5,7,9,11,0,2,4,6,8,10])
+            },
+            {
+                difficulty: "Master C", rows: 12, cols: 12, durationSeconds: 10 * 60,
+                regions: complexRegions12x12, 
+                solutionBoard: createSolutionBoard(12, [2,5,8,11,1,4,7,10,0,3,6,9])
+            },
+
+            // --- Legendary (14x14) with Column Regions ---
+            {
+                difficulty: "Legendary", rows: 14, cols: 14, durationSeconds: 10 * 60, 
+                regions: complexRegions14x14,
+                solutionBoard: createSolutionBoard(14, [0,2,4,6,8,10,12,1,3,5,7,9,11,13])
+            },
+            {
+                difficulty: "Legendary B", rows: 14, cols: 14, durationSeconds: 10 * 60, 
+                regions: complexRegions14x14, 
+                solutionBoard: createSolutionBoard(14, [1,3,5,7,9,11,13,0,2,4,6,8,10,12])
+            },
+            {
+                difficulty: "Legendary C", rows: 14, cols: 14, durationSeconds: 10 * 60, 
+                regions: complexRegions14x14, 
+                solutionBoard: createSolutionBoard(14, [0,4,8,12,2,6,10,13,3,7,11,1,5,9]) 
             }
         ];
 
+        // --- Game State (remains the same) ---
         let board = [];
         let errorBoard = [];
         let moveHistory = [];
@@ -224,6 +389,7 @@
         let gameInProgress = false;
         let hintedCell = null; 
 
+        // --- DOM Elements (remains the same) ---
         const gameBoardElement = document.getElementById('game-board');
         const newGameButton = document.getElementById('new-game-button');
         const undoButton = document.getElementById('undo-button');
@@ -245,9 +411,12 @@
         const winBestTime = document.getElementById('win-best-time');
         const winAvgTime = document.getElementById('win-avg-time');
         const winModalCloseBtn = document.getElementById('win-modal-close-btn');
+        const gameTitleElement = document.getElementById('game-title');
 
+
+        // --- Game Logic Functions ---
         function loadStats() {
-            const storedStats = localStorage.getItem('crownPuzzleStats_9x9_v1'); 
+            const storedStats = localStorage.getItem('crownPuzzleStats_v11_difficulty_grids'); 
             if (storedStats) {
                 const parsedStats = JSON.parse(storedStats);
                 gameStats = {...gameStats, ...parsedStats}; 
@@ -256,7 +425,7 @@
         }
 
         function saveStats() {
-            localStorage.setItem('crownPuzzleStats_9x9_v1', JSON.stringify(gameStats));
+            localStorage.setItem('crownPuzzleStats_v11_difficulty_grids', JSON.stringify(gameStats));
             updateStatsDisplay();
         }
 
@@ -323,6 +492,7 @@
             gameBoardElement.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
             gameBoardElement.style.gridTemplateRows = `repeat(${config.rows}, 1fr)`;
             difficultyDisplay.textContent = `Difficulty: ${config.difficulty}`; 
+            gameTitleElement.textContent = `Crown Puzzle Game (${config.rows}x${config.cols})`;
             
             newGameButton.classList.remove('button-attention'); 
             newGameButton.classList.add('button-success');
@@ -547,7 +717,7 @@
             }
             
             gameStats.currentAttemptNumber = (gameStats.currentAttemptNumber || 0) + 1;
-            const puzzleIndex = 0; // Always use the first (and only) puzzle config for 9x9
+            const puzzleIndex = (gameStats.currentAttemptNumber - 1) % allPuzzleConfigs.length; // Cycle through all puzzles
             initializeBoard(allPuzzleConfigs[puzzleIndex]);
             
             startTimer();
